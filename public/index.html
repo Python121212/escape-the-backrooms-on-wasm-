@@ -3,64 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Backrooms Local Launcher</title>
+    <title>Backrooms Pro God Controller</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: #0f0; font-family: monospace; }
-        #canvas-container { width: 100%; height: 100%; position: relative; }
-        canvas { width: 100%; height: 100%; display: block; }
-        #status { position: absolute; top: 10px; left: 10px; font-size: 12px; z-index: 10; pointer-events: none; }
+        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background: #000; font-family: monospace; user-select: none; -webkit-user-select: none; touch-action: none; }
+        
+        /* 画面サイズに自動追従、ダブルタップズームを完全に禁止 */
+        #game-container { width: 100%; height: 100%; position: relative; display: flex; box-sizing: border-box; touch-action: none; }
+        #touch-zone-left { width: 50%; height: 100%; position: relative; z-index: 1; touch-action: none; }
+        #touch-zone-right { width: 50%; height: 100%; position: relative; z-index: 1; border-left: 1px dashed rgba(255,255,255,0.05); touch-action: none; }
+
+        #overlay-log { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); color: #0f0; font-size: 11px; z-index: 10; text-align: center; pointer-events: none; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; }
+
+        #sys-menu { position: absolute; top: 12px; left: 12px; z-index: 20; }
+        .sys-btn { background: #111; border: 1px solid #0f0; color: #0f0; padding: 6px 12px; font-weight: bold; border-radius: 4px; }
+
+        /* アクションボタン：届きやすいように右下へ凝縮 */
+        .btn { 
+            position: absolute; 
+            background: rgba(45, 45, 45, 0.6); 
+            border: 2px solid rgba(255,255,255,0.4); 
+            color: #fff; 
+            border-radius: 50%; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 5; 
+            font-size: 12px;
+            text-align: center;
+            touch-action: none;
+        }
+        .btn.active-press { background: rgba(0, 255, 0, 0.5) !important; border-color: #0f0 !important; color: #0f0; }
+        .btn.keep-active { background: rgba(255, 165, 0, 0.6) !important; border-color: #ffa500 !important; }
+        .edit-mode { border: 2px dashed #ff00ff !important; background: rgba(255, 0, 255, 0.2) !important; }
+
+        /* アイテムスロット（中央下部） */
+        .slot-container { position: absolute; bottom: 15px; left: 35%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 5; }
+        .slot-btn { width: 40px; height: 40px; background: rgba(40,40,40,0.6); border: 2px solid rgba(255,255,255,0.4); color: #fff; font-size: 14px; border-radius: 6px; touch-action: none; }
+        .slot-btn:active { border-color: #0f0; color: #0f0; }
+
+        /* --- 自作インゲームキーボード UI --- */
+        #custom-keyboard-overlay { display: none; position: absolute; bottom: 0; left: 0; width: 100vw; height: 45vh; background: rgba(20, 20, 20, 0.95); border-top: 3px solid #333; z-index: 100; box-sizing: border-box; padding: 8px; flex-direction: column; gap: 6px; touch-action: none; }
+        #kb-input-line { display: flex; width: 100%; height: 40px; gap: 8px; }
+        #kb-preview { flex: 1; background: #000; border: 1px solid #555; color: #fff; padding: 0 10px; font-size: 16px; line-height: 40px; border-radius: 4px; overflow: hidden; white-space: nowrap; }
+        .kb-row { display: flex; width: 100%; flex: 1; gap: 4px; justify-content: center; }
+        .kb-key { flex: 1; max-width: 60px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .kb-key:active { background: #0f0; color: #000; }
+        .kb-key.wide { flex: 2; max-width: 100px; background: #444; }
+        .kb-key.space { flex: 5; max-width: 300px; background: #444; }
     </style>
 </head>
 <body>
 
-<div id="canvas-container">
-    <div id="status">LOCAL COMPONENT INITIALIZING...</div>
-    <canvas id="gpu-canvas"></canvas>
+<div id="game-container">
+    <div id="overlay-log">[SYSTEM] Double-tap zoom disabled. Ready.</div>
+    
+    <div id="sys-menu">
+        <button class="sys-btn" id="mode-toggle" onclick="toggleEditMode()">EDIT</button>
+    </div>
+    
+    <div id="touch-zone-left">
+        <div class="btn" id="btn-shift" style="bottom: 18vh; left: 3vw; width: 60px; height: 60px;">走る<br>Shift</div>
+        <div class="btn" id="btn-ctrl" style="bottom: 5vh; left: 3vw; width: 60px; height: 60px;">屈む<br>Ctrl</div>
+    </div>
+    
+    <div id="touch-zone-right">
+        <div class="btn" id="btn-click" style="bottom: 4vh; right: 3vw; width: 85px; height: 85px; border-color: #ff4444; font-size: 14px;">USE<br>Click</div>
+        <div class="btn" id="btn-f" style="bottom: 16vh; right: 4vw; width: 55px; height: 55px;">交流<br>F</div>
+        
+        <div class="btn" id="btn-q" style="bottom: 14vh; right: 19vw; width: 50px; height: 50px;">←L<br>Q</div>
+        <div class="btn" id="btn-e" style="bottom: 14vh; right: 12vw; width: 50px; height: 50px;">R→<br>E</div>
+        
+        <div class="btn" id="btn-v" style="bottom: 3vh; right: 15vw; width: 55px; height: 55px;">話す<br>V</div>
+        <div class="btn" id="btn-c" style="bottom: 3vh; right: 23vw; width: 50px; height: 50px;">証拠<br>C</div>
+        
+        <div class="btn" id="btn-enter" style="bottom: 25vh; right: 3vw; width: 45px; height: 45px; border-radius: 8px;">Chat</div>
+        <div class="btn" id="btn-i" style="bottom: 25vh; right: 11vw; width: 45px; height: 45px; border-radius: 8px;">Inv</div>
+        <div class="btn" id="btn-tab" style="bottom: 25vh; right: 19vw; width: 45px; height: 45px; border-radius: 8px;">Tab</div>
+    </div>
+
+    <div class="slot-container">
+        <button class="slot-btn" id="btn-1">1</button>
+        <button class="slot-btn" id="btn-2">2</button>
+        <button class="slot-btn" id="btn-3">3</button>
+    </div>
+
+    <div id="custom-keyboard-overlay">
+        <div id="kb-input-line">
+            <div id="kb-preview"></div>
+            <button class="sys-btn" style="border-color:#ff4444; color:#ff4444;" onclick="closeKeyboard(false)">CANCEL</button>
+            <button class="sys-btn" onclick="closeKeyboard(true)">ENTER</button>
+        </div>
+        <div class="kb-row" id="kb-row-1"></div>
+        <div class="kb-row" id="kb-row-2"></div>
+        <div class="kb-row" id="kb-row-3"></div>
+        <div class="kb-row">
+            <button class="kb-key wide" onclick="switchLang()" id="kb-lang-btn">JA / EN</button>
+            <button class="kb-key space" onclick="pressKey(' ')">SPACE</button>
+            <button class="kb-key wide" onclick="pressBack()">BACK</button>
+        </div>
+    </div>
 </div>
 
-<script type="module">
-    const statusEl = document.getElementById('status');
-    function log(msg) { statusEl.innerText += `\n[AI_SRE] ${msg}`; console.log(msg); }
+<script>
+    const logEl = document.getElementById('overlay-log');
+    let isEditMode = false;
+    let isVKeeping = false;
+    let lastCtrlTap = 0;
 
-    async function initLocalEnvironment() {
-        // 1. ローカル特権ストレージ (OPFS) の確保
-        try {
-            log("Accessing OS-protected OPFS storage...");
-            const root = await navigator.storage.getDirectory();
-            // ここに格納されたゲームデータ（Escape the Backrooms）はOSに勝手に削除されません
-            log("OPFS Storage Secured. (No cloud storage dependency).");
-        } catch (e) {
-            log("ERROR: Failed to secure local storage.");
-            return;
+    const keyMap = {
+        'btn-shift': 'LeftShift', 'btn-ctrl': 'LeftControl', 'btn-q': 'Q', 'btn-e': 'E',
+        'btn-f': 'F', 'btn-click': 'MouseLeft', 'btn-v': 'V', 'btn-tab': 'Tab',
+        'btn-i': 'I', 'btn-c': 'C', 'btn-1': '1', 'btn-2': '2', 'btn-3': '3'
+    };
+
+    // ダブルタップによるブラウザズームを完全に防止する盾
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastCtrlTap < 250 && e.target.id !== 'btn-ctrl') {
+            e.preventDefault(); // Ctrl以外でのダブルタップ挙動を完全に抹殺
         }
+    }, { passive: false });
 
-        // 2. Turnip(WebGPU) レンダリング層の初期化
-        if (!navigator.gpu) {
-            log("ERROR: WebGPU not supported. Turnip driver bridge failed.");
-            return;
-        }
-
-        log("Requesting Tensor G4 High-Performance GPU...");
-        const adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
-        const device = await adapter.requestDevice();
-        
-        const canvas = document.getElementById('gpu-canvas');
-        const context = canvas.getContext('webgpu');
-        
-        canvas.width = window.innerWidth * (window.devicePixelRatio || 1);
-        canvas.height = window.innerHeight * (window.devicePixelRatio || 1);
-        
-        context.configure({
-            device: device,
-            format: navigator.gpu.getPreferredCanvasFormat(),
-            alphaMode: 'opaque'
-        });
-
-        log("Local GPU Pipeline Link: READY.");
-        log("Ready to execute Box64 container on local assets.");
+    function sendInput(key, state) {
+        logEl.innerText = `[INPUT] ${key} -> ${state ? 'DOWN' : 'UP'}`;
     }
 
-    window.addEventListener('DOMContentLoaded', initLocalEnvironment);
+    // --- 1. スネーク（Ctrl）連続2回でボイスチャット（V）を常時キープ ---
+    const ctrlBtn = document.getElementById('btn-ctrl');
+    ctrlBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (isEditMode) return;
+        
+        const now = Date.now();
+        if (now - lastCtrlTap < 300) { // 300ms以内の連続タップを検知
+            isVKeeping = !isVKeeping;
+            const vBtn = document.getElementById('btn-v');
+            if (isVKeeping) {
+                vBtn.classList.add('keep-active');
+                sendInput('V', true); // Vキーを押しっぱなしに
+                logEl.innerText = "[VOICE] Voice Chat locked ON (Keep)";
+            } else {
+                vBtn.classList.remove('keep-active');
+                sendInput('V', false);
+                logEl.innerText = "[VOICE] Voice Chat locked OFF";
+            }
+            lastCtrlTap = 0;
+            return;
+        }
+        lastCtrlTap = now;
+        ctrlBtn.classList.add('active-press');
+        sendInput('LeftControl', true);
+    });
+
+    ctrlBtn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        ctrlBtn.classList.remove('active-press');
+        sendInput('LeftControl', false);
+    });
+
+    // --- 2. 移動ジョイスティック ---
+    const joystick = nipplejs.create({
+        zone: document.getElementById('touch-zone-left'),
+        mode: 'dynamic',
+        position: { left: '25%', top: '75%' },
+        color: 'rgba(255, 255, 255, 0.5)',
+        size: 110
+    });
+
+    // --- 3. FPS視点ドラッグ領域 ---
+    const rightZone = document.getElementById('touch-zone-right');
+    let isDragging = false, lastX = 0, lastY = 0;
+    rightZone.addEventListener('touchstart', (e) => {
+        if (isEditMode || e.target.classList.contains('btn') || e.target.classList.contains('slot-btn')) return;
+        isDragging = true;
+        lastX = e.touches[0].clientX;
+        lastY = e.touches[0].clientY;
+    }, { passive: true });
+    rightZone.addEventListener('touchmove', (e) => {
+        if (!isDragging || isEditMode) return;
+        logEl.innerText = `[LOOK] X: ${e.touches[0].clientX - lastX}, Y: ${e.touches[0].clientY - lastY}`;
+        lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+    }, { passive: true });
+    rightZone.addEventListener('touchend', () => isDragging = false);
+
+    // --- 4. 通常ボタン処理（CtrlとChatボタン以外） ---
+    document.querySelectorAll('.btn, .slot-btn').forEach(btn => {
+        if (btn.id === 'btn-ctrl' || btn.id === 'btn-enter') return;
+        btn.addEventListener('touchstart', (e) => {
+            if (isEditMode) return;
+            e.preventDefault();
+            if (btn.id === 'btn-v' && isVKeeping) return; // キープ中は通常タップを無視
+            btn.classList.add('active-press');
+            sendInput(keyMap[btn.id], true);
+        });
+        btn.addEventListener('touchend', (e) => {
+            if (isEditMode) return;
+            e.preventDefault();
+            if (btn.id === 'btn-v' && isVKeeping) {
+                // キープ中にVを直接タップされたらキープ解除
+                isVKeeping = false;
+                btn.classList.remove('keep-active');
+                sendInput('V', false);
+                return;
+            }
+            btn.classList.remove('active-press');
+            sendInput(keyMap[btn.id], false);
+        });
+    });
+
+    // --- 5. 専用オリジナルキーボードシステム ---
+    const kbOverlay = document.getElementById('custom-keyboard-overlay');
+    const kbPreview = document.getElementById('kb-preview');
+    let currentLang = 'EN';
+    let chatText = "";
+
+    const layouts = {
+        EN: [
+            ["Q","W","E","R","T","Y","U","I","O","P"],
+            ["A","S","D","F","G","H","J","K","L"],
+            ["Z","X","C","V","B","N","M"]
+        ],
+        JA: [
+            ["あ","い","う","え","お","か","き","く","け","こ"],
+            ["さ","し","す","せ","そ","た","ち","つ","て","と"],
+            ["な","に","ぬ","ね","の","は","ひ","ふ","へ","ほ"]
+        ]
+    };
+
+    document.getElementById('btn-enter').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if(isEditMode) return;
+        kbOverlay.style.display = 'flex';
+        chatText = "";
+        kbPreview.innerText = "";
+        sendInput('Enter', true);
+    });
+
+    function renderKeyboard() {
+        const layout = layouts[currentLang];
+        for (let i = 0; i < 3; i++) {
+            const row = document.getElementById(`kb-row-${i+1}`);
+            row.innerHTML = "";
+            layout[i].forEach(char => {
+                const key = document.createElement('div');
+                key.className = "kb-key";
+                key.innerText = char;
+                key.addEventListener('touchstart', (e) => { e.preventDefault(); pressKey(char); });
+                row.appendChild(key);
+            });
+        }
+    }
+
+    function pressKey(char) { chatText += char; kbPreview.innerText = chatText; }
+    function pressBack() { chatText = chatText.slice(0, -1); kbPreview.innerText = chatText; }
+    function switchLang() { currentLang = currentLang === 'EN' ? 'JA' : 'EN'; document.getElementById('kb-lang-btn').innerText = currentLang; renderKeyboard(); }
+    
+    function closeKeyboard(send) {
+        kbOverlay.style.display = 'none';
+        if (send && chatText) {
+            logEl.innerText = `[CHAT SENT] ${chatText}`;
+            // ここでWine経由で文字列をゲームのチャットに流し込む処理へ接続
+        }
+        sendInput('Enter', false);
+    }
+    renderKeyboard();
+
+    // --- 6. レイアウトカスタマイズ機能 ---
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        const toggleBtn = document.getElementById('mode-toggle');
+        const buttons = document.querySelectorAll('.btn');
+        if (isEditMode) {
+            toggleBtn.innerText = "SAVE"; toggleBtn.style.color = "#ff00ff";
+            buttons.forEach(b => b.classList.add('edit-mode'));
+        } else {
+            toggleBtn.innerText = "EDIT"; toggleBtn.style.color = "#0f0";
+            buttons.forEach(b => b.classList.remove('edit-mode'));
+            saveLayout();
+        }
+    }
+
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('touchmove', (e) => {
+            if (!isEditMode) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            btn.style.left = `${(touch.clientX - btn.offsetWidth/2) / window.innerWidth * 100}vw`;
+            btn.style.top = `${(touch.clientY - btn.offsetHeight/2) / window.innerHeight * 100}vh`;
+            btn.style.bottom = 'auto'; btn.style.right = 'auto';
+        });
+    });
+
+    function saveLayout() {
+        const layout = {};
+        document.querySelectorAll('.btn').forEach(btn => { layout[btn.id] = { left: btn.style.left, top: btn.style.top }; });
+        localStorage.setItem('backrooms_layout_v2', JSON.stringify(layout));
+    }
+
+    function loadLayout() {
+        const saved = localStorage.getItem('backrooms_layout_v2');
+        if (!saved) return;
+        const layout = JSON.parse(saved);
+        Object.keys(layout).forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn && layout[id].left) {
+                btn.style.left = layout[id].left; btn.style.top = layout[id].top;
+                btn.style.bottom = 'auto'; btn.style.right = 'auto';
+            }
+        });
+    }
+    window.addEventListener('DOMContentLoaded', loadLayout);
 </script>
 </body>
 </html>
