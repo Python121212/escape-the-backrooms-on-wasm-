@@ -12,16 +12,40 @@
         #touch-zone-left { width: 45%; height: 100%; position: relative; z-index: 1; touch-action: none; }
         #touch-zone-right { width: 55%; height: 100%; position: relative; z-index: 1; touch-action: none; }
 
-        #overlay-log { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); color: #0f0; font-size: 11px; z-index: 10; text-align: center; pointer-events: none; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; }
+        #overlay-log { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 11px; z-index: 10; text-align: center; pointer-events: none; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; }
         #sys-menu { position: absolute; top: 12px; left: 12px; z-index: 20; }
-        .sys-btn { background: #111; border: 1px solid #0f0; color: #0f0; padding: 6px 12px; font-weight: bold; border-radius: 4px; }
+        .sys-btn { background: rgba(30,30,30,0.4); border: 1px solid rgba(255,255,255,0.3); color: #ccc; padding: 6px 12px; font-weight: bold; border-radius: 4px; }
 
-        /* アクションボタン：親指の回転軌道（扇形）に沿って完全再配置 */
+        .top-menu-container {
+            position: absolute;
+            top: 15px;
+            right: 80px;
+            display: flex;
+            gap: 10px;
+            z-index: 20;
+        }
+        .top-btn {
+            width: 52px;
+            height: 42px;
+            background: rgba(40, 40, 40, 0.4); /* 透明度をアップ */
+            border: 1.5px solid rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            touch-action: none;
+        }
+        .top-btn:active { background: rgba(255,255,255,0.3); }
+
+        /* ゲーム操作ボタン：背景をさらに透かして視界をクリアに */
         .btn { 
             position: absolute; 
-            background: rgba(55, 55, 55, 0.6); 
-            border: 2px solid rgba(255,255,255,0.4); 
-            color: #fff; 
+            background: rgba(35, 35, 35, 0.35) !important; /* より透明に */
+            border: 1.5px solid rgba(255,255,255,0.25) !important; 
+            color: rgba(255,255,255,0.6) !important; 
             border-radius: 50%; 
             font-weight: bold; 
             display: flex; 
@@ -30,55 +54,83 @@
             z-index: 5; 
             text-align: center;
             touch-action: none;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
-        .btn.active-press { background: rgba(0, 255, 0, 0.6) !important; border-color: #0f0 !important; color: #0f0; }
-        .btn.keep-active { background: rgba(255, 140, 0, 0.7) !important; border-color: #ff8c00 !important; }
+        .btn.active-press { background: rgba(255, 255, 255, 0.3) !important; color: #fff !important; }
+        .btn.keep-active { background: rgba(255, 140, 0, 0.4) !important; border-color: rgba(255,140,0,0.6) !important; color: #ff8c00 !important; }
         .edit-mode { border: 2px dashed #ff00ff !important; background: rgba(255, 0, 255, 0.2) !important; }
 
-        /* アイテムスロット（左下、移動の邪魔にならない絶妙な位置に配置） */
-        .slot-container { position: absolute; bottom: 15px; left: 22vw; display: flex; gap: 8px; z-index: 5; }
-        .slot-btn { width: 44px; height: 44px; background: rgba(40,40,40,0.7); border: 2px solid rgba(255,255,255,0.4); color: #fff; font-size: 16px; border-radius: 8px; touch-action: none; }
-        .slot-btn:active { border-color: #0f0; color: #0f0; }
+        .slot-container { position: absolute; bottom: 40px; left: 22vw; display: flex; gap: 8px; z-index: 5; }
+        .slot-btn { width: 44px; height: 44px; background: rgba(40,40,40,0.35); border: 1.5px solid rgba(255,255,255,0.25); color: rgba(255,255,255,0.6); font-size: 16px; border-radius: 8px; touch-action: none; }
+        .slot-btn:active { border-color: #fff; color: #fff; }
 
-        /* --- 51音携帯型フリック風トグルキーボード UI --- */
-        #custom-keyboard-overlay { display: none; position: absolute; bottom: 0; left: 0; width: 100vw; height: 50vh; background: rgba(15, 15, 15, 0.98); border-top: 3px solid #0f0; z-index: 100; box-sizing: border-box; padding: 10px; flex-direction: column; gap: 8px; touch-action: none; }
-        #kb-input-line { display: flex; width: 100%; height: 45px; gap: 10px; }
-        #kb-preview { flex: 1; background: #000; border: 1px solid #0f0; color: #0f0; padding: 0 12px; font-size: 18px; line-height: 45px; border-radius: 4px; overflow: hidden; white-space: nowrap; }
-        .kb-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; flex: 1; width: 100%; max-width: 600px; margin: 0 auto; }
-        .kb-key { background: #252525; border: 1px solid #555; color: #fff; border-radius: 6px; font-size: 16px; display: flex; align-items: center; justify-content: center; font-weight: bold; min-height: 50px; }
-        .kb-key:active { background: #0f0; color: #000; }
-        .kb-key.sys-key { background: #444; color: #0f0; }
+        /* --- 左半分に寄せるスマート半透明フリックキーボード UI --- */
+        #custom-keyboard-overlay { 
+            display: none; 
+            position: absolute; 
+            bottom: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 65vh; 
+            z-index: 100; 
+            touch-action: none; 
+        }
+        /* キーボード左側（実体領域） */
+        #kb-left-panel {
+            width: 45vw;
+            height: 100%;
+            background: rgba(25, 25, 25, 0.65); /* 落ち着いた灰色の半透明 */
+            border-right: 1.5px solid rgba(255,255,255,0.15);
+            box-sizing: border-box;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        /* キーボード右側（タップすると消える透明なキャンセル空間） */
+        #kb-right-cancel-zone {
+            width: 55vw;
+            height: 100%;
+            background: transparent;
+        }
+
+        #kb-input-line { display: flex; width: 100%; height: 38px; gap: 6px; }
+        #kb-preview { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #eee; padding: 0 10px; font-size: 15px; line-height: 38px; border-radius: 4px; overflow: hidden; white-space: nowrap; }
+        
+        .kb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; flex: 1; width: 100%; }
+        .kb-key { background: rgba(50, 50, 50, 0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; font-size: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; position: relative; }
+        .kb-key.sys-key { background: rgba(80, 80, 80, 0.4); color: #ccc; font-size: 13px; }
+
+        /* フリック時のガイドポップアップ */
+        .flick-pop { display: none; position: absolute; width: 140%; height: 140%; background: rgba(40,40,40,0.95); border: 1px solid #aaa; color: #fff; font-size: 18px; align-items: center; justify-content: center; border-radius: 8px; z-index: 110; top: -20%; left: -20%; pointer-events: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <div id="overlay-log">[SYSTEM] Ergonomic Arc Layout Loaded. Ready.</div>
+    <div id="overlay-log">[SYSTEM] Keyboard Minimap Active. Ready.</div>
     
     <div id="sys-menu">
         <button class="sys-btn" id="mode-toggle" onclick="toggleEditMode()">EDIT</button>
     </div>
     
     <div id="touch-zone-left">
-        <div class="btn" id="btn-shift" style="bottom: 18vh; left: 3vw; width: 65px; height: 65px; font-size: 13px;">走る<br>Shift</div>
-        <div class="btn" id="btn-ctrl" style="bottom: 4vh; left: 3vw; width: 65px; height: 65px; font-size: 13px;">屈む<br>Ctrl</div>
+        <div class="btn" id="btn-shift" style="bottom: 160px; left: 20px; width: 65px; height: 65px; font-size: 13px;">走る<br>Shift</div>
+        <div class="btn" id="btn-ctrl" style="bottom: 55px; left: 20px; width: 65px; height: 65px; font-size: 13px;">屈む<br>Ctrl</div>
     </div>
     
     <div id="touch-zone-right">
-        <div class="btn" id="btn-click" style="bottom: 3vh; right: 3vw; width: 95px; height: 95px; border-color: #ff4444; font-size: 15px; background: rgba(80,30,30,0.6);">USE<br>Click</div>
-        
-        <div class="btn" id="btn-f" style="bottom: 15vh; right: 4vw; width: 60px; height: 60px; font-size: 13px;">交流<br>F</div>
-        <div class="btn" id="btn-v" style="bottom: 3vh; right: 17vw; width: 60px; height: 60px; font-size: 13px;">話す<br>V</div>
+        <div class="top-menu-container">
+            <div class="top-btn" id="btn-tab">Tab</div>
+            <div class="top-btn" id="btn-i">Inv</div>
+            <div class="top-btn" id="btn-enter" style="border-color: rgba(255,255,255,0.4); color: #fff;">Chat</div>
+        </div>
 
-        <div class="btn" id="btn-q" style="bottom: 24vh; right: 14vw; width: 55px; height: 55px; font-size: 12px;">←L<br>Q</div>
-        <div class="btn" id="btn-e" style="bottom: 19vh; right: 23vw; width: 55px; height: 55px; font-size: 12px;">R→<br>E</div>
-        
-        <div class="btn" id="btn-c" style="bottom: 10vh; right: 25vw; width: 55px; height: 55px; font-size: 12px;">証拠<br>C</div>
-        
-        <div class="btn" id="btn-enter" style="top: 2vh; right: 2vw; width: 48px; height: 48px; border-radius: 8px;">Chat</div>
-        <div class="btn" id="btn-i" style="top: 2vh; right: 11vw; width: 48px; height: 48px; border-radius: 8px;">Inv</div>
-        <div class="btn" id="btn-tab" style="top: 2vh; right: 20vw; width: 48px; height: 48px; border-radius: 8px;">Tab</div>
+        <div class="btn" id="btn-click" style="bottom: 55px; right: 25px; width: 85px; height: 85px; font-size: 14px; z-index: 6;">USE<br>Click</div>
+        <div class="btn" id="btn-f" style="bottom: 160px; right: 25px; width: 55px; height: 55px; font-size: 12px;">交流<br>F</div>
+        <div class="btn" id="btn-v" style="bottom: 55px; right: 130px; width: 55px; height: 55px; font-size: 12px;">話す<br>V</div>
+        <div class="btn" id="btn-e" style="bottom: 160px; right: 100px; width: 50px; height: 50px; font-size: 11px;">R→<br>E</div>
+        <div class="btn" id="btn-q" style="bottom: 160px; right: 170px; width: 50px; height: 50px; font-size: 11px;">←L<br>Q</div>
+        <div class="btn" id="btn-c" style="bottom: 55px; right: 205px; width: 50px; height: 50px; font-size: 11px;">証拠<br>C</div>
     </div>
 
     <div class="slot-container">
@@ -88,13 +140,16 @@
     </div>
 
     <div id="custom-keyboard-overlay">
-        <div id="kb-input-line">
-            <div id="kb-preview"></div>
-            <button class="sys-btn" style="border-color:#ff4444; color:#ff4444;" onclick="closeKeyboard(false)">CANCEL</button>
-            <button class="sys-btn" onclick="closeKeyboard(true)">SEND</button>
-        </div>
-        <div class="kb-grid" id="kb-grid-container">
+        <div style="display: flex; width: 100%; height: 100%;">
+            <div id="kb-left-panel">
+                <div id="kb-input-line">
+                    <div id="kb-preview"></div>
+                    <button class="sys-btn" style="padding:0 8px;" onclick="closeKeyboard(true)">SEND</button>
+                </div>
+                <div class="kb-grid" id="kb-grid-container"></div>
             </div>
+            <div id="kb-right-cancel-zone" ontouchstart="closeKeyboard(false)"></div>
+        </div>
     </div>
 </div>
 
@@ -110,14 +165,12 @@
         'btn-i': 'I', 'btn-c': 'C', 'btn-1': '1', 'btn-2': '2', 'btn-3': '3'
     };
 
-    // ズーム防止
     document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
     function sendInput(key, state) {
         logEl.innerText = `[INPUT] ${key} -> ${state ? 'DOWN' : 'UP'}`;
     }
 
-    // Ctrl連続2回でVキーをトグル固定
     const ctrlBtn = document.getElementById('btn-ctrl');
     ctrlBtn.addEventListener('touchstart', (e) => {
         e.preventDefault(); if (isEditMode) return;
@@ -125,11 +178,8 @@
         if (now - lastCtrlTap < 300) {
             isVKeeping = !isVKeeping;
             const vBtn = document.getElementById('btn-v');
-            if (isVKeeping) {
-                vBtn.classList.add('keep-active'); sendInput('V', true);
-            } else {
-                vBtn.classList.remove('keep-active'); sendInput('V', false);
-            }
+            if (isVKeeping) { vBtn.classList.add('keep-active'); sendInput('V', true); }
+            else { vBtn.classList.remove('keep-active'); sendInput('V', false); }
             lastCtrlTap = 0; return;
         }
         lastCtrlTap = now;
@@ -137,18 +187,16 @@
     });
     ctrlBtn.addEventListener('touchend', (e) => { e.preventDefault(); ctrlBtn.classList.remove('active-press'); sendInput('LeftControl', false); });
 
-    // 移動ジョイスティック
     const joystick = nipplejs.create({
         zone: document.getElementById('touch-zone-left'),
         mode: 'dynamic', position: { left: '20%', top: '75%' },
-        color: 'rgba(255, 255, 255, 0.5)', size: 110
+        color: 'rgba(255, 255, 255, 0.4)', size: 110
     });
 
-    // FPSドラッグ視点移動（右エリアのボタン以外をドラッグ）
     const rightZone = document.getElementById('touch-zone-right');
     let isDragging = false, lastX = 0, lastY = 0;
     rightZone.addEventListener('touchstart', (e) => {
-        if (isEditMode || e.target.classList.contains('btn') || e.target.classList.contains('slot-btn')) return;
+        if (isEditMode || e.target.classList.contains('btn') || e.target.classList.contains('top-btn') || e.target.classList.contains('slot-btn')) return;
         isDragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
     }, { passive: true });
     rightZone.addEventListener('touchmove', (e) => {
@@ -158,8 +206,7 @@
     }, { passive: true });
     rightZone.addEventListener('touchend', () => isDragging = false);
 
-    // 通常のボタンタッチ処理
-    document.querySelectorAll('.btn, .slot-btn').forEach(btn => {
+    document.querySelectorAll('.btn, .top-btn, .slot-btn').forEach(btn => {
         if (btn.id === 'btn-ctrl' || btn.id === 'btn-enter') return;
         btn.addEventListener('touchstart', (e) => {
             if (isEditMode) return; e.preventDefault();
@@ -173,64 +220,104 @@
         });
     });
 
-    // --- 超快適ガラケー風トグル（連続タップで文字送り）キーボードエンジン ---
+    // --- 本格フリック入力対応キーボードコアエンジン ---
     const kbOverlay = document.getElementById('custom-keyboard-overlay');
     const kbPreview = document.getElementById('kb-preview');
     const gridContainer = document.getElementById('kb-grid-container');
-    let currentLang = 'JA';
-    let chatText = "";
-    let lastKey = null, lastKeyTime = 0, toggleIndex = 0;
+    let currentLang = 'JA'; let chatText = "";
 
-    // ガラケー式マッピング（連続で押すと「あ→い→う→え→お」と変わる）
-    const toggleLayout = {
+    const flickLayout = {
         JA: [
-            { label: "あ", chars: ["あ","い","う","え","お"] }, { label: "か", chars: ["か","き","く","け","こ"] }, { label: "さ", chars: ["さ","し","す","せ","そ"] }, { label: "戻る", action: "back" },
-            { label: "た", chars: ["た","ち","つ","て","と"] }, { label: "な", chars: ["な","に","ぬ","ね","の"] }, { label: "は", chars: ["は","ひ","ふ","へ","ほ"] }, { label: "切替", action: "lang" },
-            { label: "ま", chars: ["ま","み","む","め","も"] }, { label: "や", chars: ["や","ゆ","よ"] },         { label: "ら", chars: ["ら","り","る","れ","ろ"] }, { label: "空白", action: "space" },
-            { label: "わ", chars: ["わ","を","ん","ー"] },     { label: "゛゜", chars: ["゛","゜"] },       { label: "、。", chars: ["、","。","？","！"] }
+            { label: "あ", center: "あ", up: "う", left: "い", right: "え", down: "お" },
+            { label: "か", center: "か", up: "く", left: "き", right: "け", down: "こ" },
+            { label: "さ", center: "さ", up: "す", left: "し", right: "せ", down: "そ" },
+            { label: "た", center: "た", up: "つ", left: "ち", right: "て", down: "と" },
+            { label: "な", center: "な", up: "ぬ", left: "に", right: "ね", down: "の" },
+            { label: "は", center: "は", up: "ふ", left: "ひ", right: "へ", down: "ほ" },
+            { label: "ま", center: "ま", up: "む", left: "み", right: "め", down: "も" },
+            { label: "や", center: "や", up: "ゆ", left: "（", right: "）", down: "よ" },
+            { label: "ら", center: "ら", up: "る", left: "り", right: "れ", down: "ろ" },
+            { label: "わ", center: "わ", up: "を", left: "ん", right: "ー", down: "～" },
+            { label: "゛゜", center: "、", up: "？", left: "。", right: "！", down: "ー" },
+            { label: "英/数", action: "lang" },
+            { label: "空白", action: "space" },
+            { label: "戻る", action: "back" }
         ],
         EN: [
-            { label: "ABC", chars: ["A","B","C"] }, { label: "DEF", chars: ["D","E","F"] }, { label: "GHI", chars: ["G","H","I"] }, { label: "戻る", action: "back" },
-            { label: "JKL", chars: ["J","K","L"] }, { label: "MNO", chars: ["M","N","O"] }, { label: "PQRS", chars: ["P","Q","R","S"] }, { label: "切替", action: "lang" },
-            { label: "TUV", chars: ["T","U","V"] }, { label: "WXYZ", chars: ["W","X","Y","Z"] }, { label: "記号", chars: [".",",","?","!"] }, { label: "空白", action: "space" }
+            { label: "A-C", center: "A", up: "C", left: "B", right: "B", down: "C" },
+            { label: "D-F", center: "D", up: "F", left: "E", right: "E", down: "F" },
+            { label: "G-I", center: "G", up: "I", left: "H", right: "H", down: "I" },
+            { label: "J-L", center: "J", up: "L", left: "K", right: "K", down: "L" },
+            { label: "M-O", center: "M", up: "O", left: "N", right: "N", down: "O" },
+            { label: "P-S", center: "P", up: "R", left: "Q", right: "S", down: "S" },
+            { label: "T-V", center: "T", up: "V", left: "U", right: "U", down: "V" },
+            { label: "W-Z", center: "W", up: "Y", left: "X", right: "Z", down: "Z" },
+            { label: "記号", center: ".", up: "?", left: ",", right: "!", down: "/" },
+            { label: "日/Num", action: "lang" },
+            { label: "空白", action: "space" },
+            { label: "戻る", action: "back" }
         ]
     };
 
     document.getElementById('btn-enter').addEventListener('touchstart', (e) => {
         e.preventDefault(); if(isEditMode) return;
-        kbOverlay.style.display = 'flex'; chatText = ""; kbPreview.innerText = ""; renderGridKeyboard();
+        kbOverlay.style.display = 'block'; chatText = ""; kbPreview.innerText = ""; renderFlickKeyboard();
     });
 
-    function renderGridKeyboard() {
+    function renderFlickKeyboard() {
         gridContainer.innerHTML = "";
-        toggleLayout[currentLang].forEach(keyData => {
+        flickLayout[currentLang].forEach(keyData => {
             const btn = document.createElement('div');
             btn.className = "kb-key" + (keyData.action ? " sys-key" : "");
             btn.innerText = keyData.label;
-            
-            btn.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const now = Date.now();
-                
-                if (keyData.action) {
+
+            if (keyData.action) {
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
                     if (keyData.action === "back") chatText = chatText.slice(0, -1);
                     else if (keyData.action === "space") chatText += " ";
-                    else if (keyData.action === "lang") { currentLang = currentLang === 'JA' ? 'EN' : 'JA'; renderGridKeyboard(); return; }
-                    lastKey = null;
-                } else {
-                    // 同じキーを1秒以内に連続タップした場合は文字を回す
-                    if (lastKey === keyData.label && (now - lastKeyTime < 800)) {
-                        chatText = chatText.slice(0, -1); // 直前の文字を消して次へ
-                        toggleIndex = (toggleIndex + 1) % keyData.chars.length;
+                    else if (keyData.action === "lang") { currentLang = currentLang === 'JA' ? 'EN' : 'JA'; renderFlickKeyboard(); return; }
+                    kbPreview.innerText = chatText;
+                });
+            } else {
+                // フリックポップアップ
+                const pop = document.createElement('div');
+                pop.className = "flick-pop";
+                btn.appendChild(pop);
+
+                let startX = 0, startY = 0, chosenChar = keyData.center;
+
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    startX = e.touches[0].clientX; startY = e.touches[0].clientY;
+                    chosenChar = keyData.center;
+                    pop.innerText = chosenChar; pop.style.display = 'flex';
+                });
+
+                btn.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const dx = e.touches[0].clientX - startX; const dy = e.touches[0].clientY - startY;
+                    const threshold = 25; // フリック判定の距離
+
+                    if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+                        if (Math.abs(dx) > Math.abs(dy)) {
+                            chosenChar = dx > 0 ? (keyData.right || keyData.center) : (keyData.left || keyData.center);
+                        } else {
+                            chosenChar = dy > 0 ? (keyData.down || keyData.center) : (keyData.up || keyData.center);
+                        }
                     } else {
-                        toggleIndex = 0;
+                        chosenChar = keyData.center;
                     }
-                    chatText += keyData.chars[toggleIndex];
-                    lastKey = keyData.label;
-                    lastKeyTime = now;
-                }
-                kbPreview.innerText = chatText;
-            });
+                    pop.innerText = chosenChar;
+                });
+
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    pop.style.display = 'none';
+                    if (chosenChar) chatText += chosenChar;
+                    kbPreview.innerText = chatText;
+                });
+            }
             gridContainer.appendChild(btn);
         });
     }
@@ -240,7 +327,6 @@
         if (send && chatText) logEl.innerText = `[CHAT SENT] ${chatText}`;
     }
 
-    // --- レイアウト保存・ドラッグ変更 ---
     function toggleEditMode() {
         isEditMode = !isEditMode;
         const toggleBtn = document.getElementById('mode-toggle');
@@ -249,7 +335,7 @@
             toggleBtn.innerText = "SAVE"; toggleBtn.style.color = "#ff00ff";
             buttons.forEach(b => b.classList.add('edit-mode'));
         } else {
-            toggleBtn.innerText = "EDIT"; toggleBtn.style.color = "#0f0";
+            toggleBtn.innerText = "EDIT"; toggleBtn.style.color = "#ccc";
             buttons.forEach(b => b.classList.remove('edit-mode'));
             saveLayout();
         }
@@ -268,11 +354,11 @@
     function saveLayout() {
         const layout = {};
         document.querySelectorAll('.btn').forEach(btn => { layout[btn.id] = { left: btn.style.left, top: btn.style.top }; });
-        localStorage.setItem('backrooms_layout_v3', JSON.stringify(layout));
+        localStorage.setItem('backrooms_layout_v6', JSON.stringify(layout));
     }
 
     function loadLayout() {
-        const saved = localStorage.getItem('backrooms_layout_v3');
+        const saved = localStorage.getItem('backrooms_layout_v6');
         if (!saved) return;
         const layout = JSON.parse(saved);
         Object.keys(layout).forEach(id => {
