@@ -1,11 +1,6 @@
-name = "backrooms-container-bridge"
+name = "backrooms-p2p-bridge"
 main = "src/worker.js"
 compatibility_date = "2026-06-30"
-
-# ゲームデータを格納する高速ストレージ（R2）のバインド
-[[r2_buckets]]
-binding = "GAME_ASSETS"
-bucket_name = "escape-the-backrooms-assets"
 
 [assets]
 binding = "ASSETS"
